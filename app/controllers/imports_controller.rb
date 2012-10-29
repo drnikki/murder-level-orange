@@ -13,95 +13,53 @@ class ImportsController < ApplicationController
   def boss
     require 'open-uri'
 
-    aurl = SUBWAY_ENTRANCES
-    opened = open(aurl).read
-    imports = ActiveSupport::JSON.decode(opened)
+
     # what's all this http://stackoverflow.com/questions/7820514/how-to-save-data-from-a-json-array-to-the-database-mongodb
-    outer = 0
-    # call import-specific array informations.
-    info = subway
 
-    # loop through them
-    imports['data'].each do |record|
-      savedata = Hash.new
-
-      savedata["name"] = record[info['name']]
-      savedata["place_type"] = info['place_type']
-      savedata["human_address"] = record[info['human_address']]
-      savedata["description"] = record[info['description']]
-      # if it's nested... god is there a ruby-easy way to do this shit?
-      if info['location'] != nil 
-        #savedata['location'][] = record[info['location']][info['lat']]
-        #savedata['location'][] = record[info['location']][info['lon']]
-
-        savedata["lat"] = record[info['location']][info['lat']]
-        savedata["lon"] = record[info['location']][info['lon']]
-        savedata['location'] = Array.new( savedata['lat'].to_integer, savedata['lon'].to_integer )
-      else
-        savedata["lat"] = record[info['lat']]
-        savedata["lat"] = record[info['lon']]
-      end
-
-      @place = Places.new(savedata)
-      @place.save
-
-    end
-
-
-
-
-
-
-
-
-
-
-    #   i = 0
-    #   outer = outer + 1
-    #   record.each do |item|
-    #     i = i + 1
-    #     p i
-    #     p item 
-    #     p '-------------'
-    #     if i > 5
-    #       break
-    #     end
-    #   end
-    #   p record
-
-    #   # p record[10]
-    #   # p record[13]
-    #   # p record[15]
-    #   # p record[17][1]
-    #   # p record[17][2]
-
-    #   p '------------------------------'
-    # end
-
-    # if outer > 3
-    #   break
-    # end
-  end
-
-
-  def self.get_share_data theurl
-
-    require 'open-uri'
-  
-    # creates a new project
-    #p params[:urls]
-    #theurl = params[:urls]['address']
-    # get the data for this one
-    params = Hash.new
+    # loop through the data points for EACH URL we're sourcing.  yo.
+    sources = Hash.new
+    sources['subway'] = 'http://data.cityofnewyork.us/api/views/drex-xx56/rows.json'
+    sources['public_wifi'] = 'http://data.cityofnewyork.us/api/views/ehc4-fktp/rows.json'
+    sources['bathrooms'] = 'http://data.cityofnewyork.us/api/views/swqh-s9ee/rows.json'
+    sources['laundromats'] = 'http://data.cityofnewyork.us/api/views/uady-p6yt/rows.json'
+    sources['green_markets'] ='http://data.cityofnewyork.us/api/views/26dn-w9sw/rows.json'
+    # sources['noise_complaints'] = 'http://data.cityofnewyork.us/api/views/sw33-t3vk/rows.json'
     
-    params["delicious"] = delicious theurl
-    params["twitter"] = twitter theurl
-    params["stumbleupon"] = stumbleupon theurl
-    params["facebook"] = facebook theurl
-    params["updated"] = Time.now.to_s
-  
-    return params
-  end
+    # call import-specific array informations.
+
+    sources.each do |key , value|
+      info = send(key)
+      aurl = info["url"]
+      opened = open(aurl).read
+      imports = ActiveSupport::JSON.decode(opened)
+
+      imports['data'].each do |record|
+        savedata = Hash.new
+
+        savedata["name"] = record[info['name']]
+        savedata["place_type"] = info['place_type']
+        savedata["human_address"] = record[info['human_address']]
+        savedata["description"] = record[info['description']]
+
+        # if it's nested... god is there a ruby-easy way to do this shit?
+        if info['location'] != nil 
+          savedata["lat"] = record[info['location']][info['lat']]
+          savedata["lon"] = record[info['location']][info['lon']]
+          savedata['location'] = [ savedata['lat'].to_f, savedata['lon'].to_f ]
+        else
+          savedata["lat"] = record[info['lat']]
+          savedata["lat"] = record[info['lon']]
+        end
+
+        @place = Places.new(savedata)
+        @place.save
+
+      end # end import inner loop
+
+    end #end source outer loop.
+
+  end # end function
+
   
   def subway
     info = Hash.new
@@ -113,6 +71,80 @@ class ImportsController < ApplicationController
     info['name'] = 10
     info['human_address'] = 10
     info['description'] = 12
+
+    return info
+  end
+
+  def public_wifi
+  # [21, "21", nil, nil, nil, 0, nil, nil, "21", [nil, "40.844490535000034", "-73.84660241899991", nil, false, {"point"=>[-73.84660241899991, 40.844490535000034]}], "McDonald's", "245", "1515 Williamsbridge Rd", "Bronx", "10461", " ", "Fee-based", "http://www.mcdonalds.com/wireless.html"]
+    info = Hash.new
+    info['url'] = PUBLIC_WIFI
+    info['location'] = 9
+    info['lat'] = 1
+    info['lon'] = 2
+    info['place_type'] = "wifi"
+    info['name'] = 10
+    info['human_address'] = 12
+    info['description'] = 17
+
+    return info
+  end
+
+  def bathrooms
+    #   # [443, "443", nil, nil, nil, 0, nil, nil, "443", [nil, "40.59544637400006", "-74.08151142499992", nil, false, {"rings"=>[[[-74.08151142499992, 40.59544637400006], [-74.08154427499994, 40.595498467000084], [-74.0814772999999, 40.595523007000054], [-74.08144444999994, 40.59547090800004], [-74.08151142499992, 40.59544637400006]]]}], 
+    #"1295", "R063-BLG1304", "Ps 46 S Beach Hses Playground-Building", "NYCPARKS", "BUILDING", "X", "S", "R063", " ", -2209132800, "R063", "R063", "OLD TOWN SCHOOL", " ", " ", " ", "BATHROOM", "83.3901550649164846618077717721462249755859375", "434.5754083588941512061865068972110748291015625"]
+    info = Hash.new
+    info['url'] = BATHROOMS
+    info['location'] = 9
+    info['lat'] = 1
+    info['lon'] = 2
+    info['place_type'] = "bathroom"
+    info['name'] = 13
+    info['human_address'] = 12
+    info['description'] = 13
+
+    return info
+  end
+
+  def green_markets
+    info = Hash.new
+    info['url'] = GREEN_MARKETS
+    info['location'] = 9
+    info['lat'] = 1
+    info['lon'] = 2
+    info['place_type'] = "bathroom"
+    info['name'] = 10
+    info['human_address'] = 13
+    info['description'] = 13
+
+    return info
+  end
+
+  def laundromats
+    info = Hash.new
+    info['url'] = LAUNDROMATS
+    info['location'] = 17
+    info['lat'] = 1
+    info['lon'] = 2
+    info['place_type'] = "laundromat"
+    info['name'] = 13
+    info['human_address'] = 12
+    info['description'] = 13
+
+    return info
+  end
+
+  # these will need to come in through a resque job.  This is a f'ing HUGE feed
+  def noise_complaints
+    info = Hash.new
+    info['url'] = NOISE_COMPLAINTS
+    info['location'] = 57
+    info['lat'] = 1
+    info['lon'] = 2
+    info['place_type'] = "noise"
+    info['name'] = 13
+    info['human_address'] = 12
+    info['description'] = 13
 
     return info
   end
