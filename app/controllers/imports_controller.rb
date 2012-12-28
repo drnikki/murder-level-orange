@@ -1,6 +1,5 @@
 class ImportsController < ApplicationController
 
-
   SUBWAY_ENTRANCES = 'http://data.cityofnewyork.us/api/views/drex-xx56/rows.json'
   PUBLIC_WIFI = 'http://data.cityofnewyork.us/api/views/ehc4-fktp/rows.json'
   BATHROOMS = 'http://data.cityofnewyork.us/api/views/swqh-s9ee/rows.json'
@@ -12,7 +11,6 @@ class ImportsController < ApplicationController
   # this is the boss of the importers, for now.
   def boss
     require 'open-uri'
-
 
     # what's all this http://stackoverflow.com/questions/7820514/how-to-save-data-from-a-json-array-to-the-database-mongodb
 
@@ -45,7 +43,9 @@ class ImportsController < ApplicationController
         if info['location'] != nil 
           savedata["lat"] = record[info['location']][info['lat']]
           savedata["lon"] = record[info['location']][info['lon']]
-          savedata['location'] = [ savedata['lat'].to_f, savedata['lon'].to_f ]
+          
+	        # ha! it's got to be longitude first.  silly.
+          savedata['location'] = [ savedata['lon'].to_f, savedata['lat'].to_f ]
         else
           savedata["lat"] = record[info['lat']]
           savedata["lat"] = record[info['lon']]
