@@ -1,5 +1,6 @@
 class ImportsController < ApplicationController
 
+  # todo, delete later....
   SUBWAY_ENTRANCES = 'http://data.cityofnewyork.us/api/views/drex-xx56/rows.json'
   PUBLIC_WIFI = 'http://data.cityofnewyork.us/api/views/ehc4-fktp/rows.json'
   BATHROOMS = 'http://data.cityofnewyork.us/api/views/swqh-s9ee/rows.json'
@@ -26,6 +27,7 @@ class ImportsController < ApplicationController
     # call import-specific array informations.
 
     sources.each do |key , value|
+      # call corresponding function
       info = send(key)
       aurl = info["url"]
       opened = open(aurl).read
@@ -76,7 +78,7 @@ class ImportsController < ApplicationController
   end
 
   def public_wifi
-  # [21, "21", nil, nil, nil, 0, nil, nil, "21", [nil, "40.844490535000034", "-73.84660241899991", nil, false, {"point"=>[-73.84660241899991, 40.844490535000034]}], "McDonald's", "245", "1515 Williamsbridge Rd", "Bronx", "10461", " ", "Fee-based", "http://www.mcdonalds.com/wireless.html"]
+    # [21, "21", nil, nil, nil, 0, nil, nil, "21", [nil, "40.844490535000034", "-73.84660241899991", nil, false, {"point"=>[-73.84660241899991, 40.844490535000034]}], "McDonald's", "245", "1515 Williamsbridge Rd", "Bronx", "10461", " ", "Fee-based", "http://www.mcdonalds.com/wireless.html"]
     info = Hash.new
     info['url'] = PUBLIC_WIFI
     info['location'] = 9
@@ -92,7 +94,7 @@ class ImportsController < ApplicationController
 
   def bathrooms
     #   # [443, "443", nil, nil, nil, 0, nil, nil, "443", [nil, "40.59544637400006", "-74.08151142499992", nil, false, {"rings"=>[[[-74.08151142499992, 40.59544637400006], [-74.08154427499994, 40.595498467000084], [-74.0814772999999, 40.595523007000054], [-74.08144444999994, 40.59547090800004], [-74.08151142499992, 40.59544637400006]]]}], 
-    #"1295", "R063-BLG1304", "Ps 46 S Beach Hses Playground-Building", "NYCPARKS", "BUILDING", "X", "S", "R063", " ", -2209132800, "R063", "R063", "OLD TOWN SCHOOL", " ", " ", " ", "BATHROOM", "83.3901550649164846618077717721462249755859375", "434.5754083588941512061865068972110748291015625"]
+    #  "1295", "R063-BLG1304", "Ps 46 S Beach Hses Playground-Building", "NYCPARKS", "BUILDING", "X", "S", "R063", " ", -2209132800, "R063", "R063", "OLD TOWN SCHOOL", " ", " ", " ", "BATHROOM", "83.3901550649164846618077717721462249755859375", "434.5754083588941512061865068972110748291015625"]
     info = Hash.new
     info['url'] = BATHROOMS
     info['location'] = 9
@@ -117,7 +119,7 @@ class ImportsController < ApplicationController
     info['human_address'] = 13
     info['description'] = 13
 
-    return info
+    return queryable.near(location: [ 23.1, 12.1 ])info
   end
 
   def laundromats

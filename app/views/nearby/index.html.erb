@@ -1,0 +1,18 @@
+I am the index shit.
+
+
+<div id="user_location">
+  <h1 class="latlog"> You're....</h1>
+  <span id="latitude">? </span>
+  <span id="longitude">? </span>
+</div>
+
+<%=link_to "Threat level?", 
+:controller=> 'nearby', 
+:action => 'lookup',
+:method => :post,
+:remote=>true %>
+
+<br /> 
+
+<%= link_to 'Submit', :query => "value", :remote => true, :method => :post %>

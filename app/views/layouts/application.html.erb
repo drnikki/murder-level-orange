@@ -24,6 +24,29 @@
   <%= csrf_meta_tags %>
 </head>
 <body>
-  <%= yield %>
+  <!-- i'm betting this isn't how you do it... i also hate you, html. -->
+  <div class="row">
+    <div class="seven columns centered">
+      <%= yield %>
+    </div>
+  </div>
+  <div class="row" style="height: 100px;">&nbsp; <!-- terrible, --></div>
+  <div class="row">
+    <div class="seven columns centered">
+    
+      <ul class="tabs-content">
+        <li class="active" id="simple1Tab">This was made by person for reason at place.  TODO</li>
+        <li id="simple2Tab">Twitter and other promotional things.</li>
+        <li id="simple3Tab">This is just a joke.</li>
+      </ul>
+      <dl class="tabs  pill">
+        <dd class="active"><a href="#simple1">About</a></dd>
+        <dd><a href="#simple2">Contact</a></dd>
+        <dd><a href="#simple3">WTF/Disclaimer</a></dd>
+      </dl>
+
+
+    </div>
+  </div>
 </body>
 </html>
